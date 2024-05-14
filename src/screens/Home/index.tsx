@@ -1,7 +1,10 @@
-import { AntDesign } from "@expo/vector-icons";
 import { useState } from "react";
-import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 import uuid from "react-native-uuid";
+import { EmptyTask } from "../../components/EmptyTask";
+import { Header } from "../../components/Header";
+import { InputGroup } from "../../components/InputGroup";
+import { TaskItem } from "../../components/TaskItem";
 import { styles } from "./style";
 
 interface Task {
@@ -15,7 +18,7 @@ export function Home() {
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [task, setTask] = useState<string>("");
 
-  function handleSelect(id: string) {
+  function handleToggleTask(id: string) {
     let updateTasks = tasks.map((task) => {
       return task.id === id
         ? {
@@ -52,74 +55,34 @@ export function Home() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image source={require("./img/logo.png")} />
-      </View>
+      <Header />
       <View style={styles.tasks}>
-        <View style={styles.inputGroup}>
-          <TextInput
-            style={styles.input}
-            placeholder="Adicione uma nova tarefa"
-            placeholderTextColor={"#808080"}
-            onChangeText={setTask}
-            value={task}
-          />
-          <TouchableOpacity
-            style={styles.plusButton}
-            onPress={() => {
-              handleSubmit(task);
-            }}
-          >
-            <AntDesign name="pluscircleo" size={16} color="white" />
-          </TouchableOpacity>
-        </View>
+        <InputGroup task={task} setTask={setTask} handleSubmit={handleSubmit} />
+
         <View style={styles.tasksInfo}>
           <View style={styles.tasksCreated}>
             <Text style={styles.tasksCreatedText}>Criadas</Text>
             <View style={styles.tasksCreatedNumber}>
-              <Text style={styles.tasksCreatedNumberText}>0</Text>
+              <Text style={styles.tasksCreatedNumberText}>{tasks.length}</Text>
             </View>
           </View>
           <View style={styles.tasksCreated}>
             <Text style={styles.tasksFinishedText}>Concluídas</Text>
             <View style={styles.tasksCreatedNumber}>
-              <Text style={styles.tasksCreatedNumberText}>0</Text>
+              <Text style={styles.tasksCreatedNumberText}>
+                {tasks.filter((task) => task.isComplete).length}
+              </Text>
             </View>
           </View>
         </View>
-        {tasks.length === 0 ? (
-          <View style={styles.tasksList}>
-            <Image source={require("./img/Clipboard.png")} />
-            <View style={styles.tasksListText}>
-              <Text style={styles.tasksListText1}>Você ainda não tem tarefas cadastradas</Text>
-              <Text style={styles.tasksListText2}>Crie tarefas e organize seus itens a fazer</Text>
-            </View>
-          </View>
-        ) : (
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            data={tasks}
-            keyExtractor={(todo) => todo.id}
-            renderItem={({ item }) => (
-              <View style={styles.taskItem}>
-                <TouchableOpacity style={styles.task} onPress={() => handleSelect(item.id)}>
-                  <View>
-                    {item.isComplete ? (
-                      <Image source={require("./img/radioChecked.png")} />
-                    ) : (
-                      <Image source={require("./img/radioDefault.png")} />
-                    )}
-                  </View>
-                  <Text style={[styles.taskTitle, item.isComplete && styles.taskTitleSelected]}>
-                    {item.title}
-                  </Text>
-                </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => handleDeleteTask(item.id)}>
-                  <Image source={require("./img/trash.png")} />
-                </TouchableOpacity>
-              </View>
-            )}
+        {tasks.length === 0 ? (
+          <EmptyTask />
+        ) : (
+          <TaskItem
+            tasks={tasks}
+            handleDeleteTask={handleDeleteTask}
+            handleSelect={handleToggleTask}
           />
         )}
       </View>
